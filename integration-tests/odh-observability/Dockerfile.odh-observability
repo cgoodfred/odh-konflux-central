@@ -1,0 +1,16 @@
+FROM registry.access.redhat.com/ubi9/go-toolset:1.26
+USER 0
+RUN yum install -y git jq wget tar python3 pip podman skopeo make gcc automake binutils && \
+    yum clean all && rm -rf /var/cache/dnf/*
+RUN wget https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-client-linux.tar.gz && \
+    tar xvf openshift-client-linux.tar.gz && chmod +x oc && mv oc /usr/local/bin/
+RUN ln -s /usr/local/bin/oc /usr/bin/kubectl
+
+ARG HELM_VERSION=3.22.0
+ARG HELM_SHA256=1e4ab49e429626cf6c6958d914248b78c9730803c2751b87627e171dc800e7bb
+RUN set -eux; \
+    wget -q -O /tmp/helm.tar.gz "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz"; \
+    printf '%s  %s\n' "${HELM_SHA256}" /tmp/helm.tar.gz | sha256sum --check -; \
+    tar -xzf /tmp/helm.tar.gz -C /tmp linux-amd64/helm; \
+    install -m 0755 /tmp/linux-amd64/helm /usr/local/bin/helm; \
+    rm -rf /tmp/linux-amd64 /tmp/helm.tar.gz
