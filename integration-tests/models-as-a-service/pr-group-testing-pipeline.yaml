@@ -6,8 +6,8 @@ metadata:
 spec:
   description: |
     A group integration test which provisions an ephemeral Hypershift cluster and runs the
-    MaaS e2e tests using images for both odh-maas-api-ci and odh-maas-controller-ci built
-    from the same pull request commit.
+    MaaS e2e tests using images for odh-maas-api-ci, odh-maas-controller-ci, and
+    odh-maas-discovery-ci built from the same pull request commit.
   params:
     - description: List of components in the group
       name: group-components
@@ -254,13 +254,16 @@ spec:
 
               export MAAS_API_IMAGE=$(jq -r '."odh-maas-api-ci".image' <<< "${SNAPSHOT}")
               export MAAS_CONTROLLER_IMAGE=$(jq -r '."odh-maas-controller-ci".image' <<< "${SNAPSHOT}")
+              export MAAS_DISCOVERY_IMAGE=$(jq -r '."odh-maas-discovery-ci".image' <<< "${SNAPSHOT}")
 
               MAAS_API_TAG=$(jq -r '."odh-maas-api-ci".image_tag' <<< "${SNAPSHOT}")
               MAAS_CONTROLLER_TAG=$(jq -r '."odh-maas-controller-ci".image_tag' <<< "${SNAPSHOT}")
+              MAAS_DISCOVERY_TAG=$(jq -r '."odh-maas-discovery-ci".image_tag' <<< "${SNAPSHOT}")
 
               if [ -z "${MAAS_API_TAG}" ] || [ "${MAAS_API_TAG}" = "null" ] || \
-                 [ -z "${MAAS_CONTROLLER_TAG}" ] || [ "${MAAS_CONTROLLER_TAG}" = "null" ]; then
-                echo "ERROR: image_tag missing for odh-maas-api-ci or odh-maas-controller-ci in SNAPSHOT" >&2
+                 [ -z "${MAAS_CONTROLLER_TAG}" ] || [ "${MAAS_CONTROLLER_TAG}" = "null" ] || \
+                 [ -z "${MAAS_DISCOVERY_TAG}" ] || [ "${MAAS_DISCOVERY_TAG}" = "null" ]; then
+                echo "ERROR: image_tag missing for odh-maas-api-ci, odh-maas-controller-ci, or odh-maas-discovery-ci in SNAPSHOT" >&2
                 exit 1
               fi
 
@@ -268,6 +271,8 @@ spec:
               echo "MAAS_API_IMAGE (tag): ${MAAS_API_IMAGE%%@*}:${MAAS_API_TAG}"
               echo "MAAS_CONTROLLER_IMAGE=${MAAS_CONTROLLER_IMAGE}"
               echo "MAAS_CONTROLLER_IMAGE (tag): ${MAAS_CONTROLLER_IMAGE%%@*}:${MAAS_CONTROLLER_TAG}"
+              echo "MAAS_DISCOVERY_IMAGE=${MAAS_DISCOVERY_IMAGE}"
+              echo "MAAS_DISCOVERY_IMAGE (tag): ${MAAS_DISCOVERY_IMAGE%%@*}:${MAAS_DISCOVERY_TAG}"
 
               ./test/e2e/scripts/prow_run_smoke_test.sh
 
